@@ -79,9 +79,9 @@ struct TestBench {
     }
 
     void fillData() {
-        for (int i = 0; i < m * k * N; i++) Ahost[i] = InType(i);
-        for (int i = 0; i < n * k * N; i++) Bhost[i] = InType(i);
-        for (int i = 0; i < m * N; i++) biasHost[i] = InType(i + 1);
+        //for (int i = 0; i < m * k * N; i++) Ahost[i] = InType(i);
+        //for (int i = 0; i < n * k * N; i++) Bhost[i] = InType(i);
+        //for (int i = 0; i < m * N; i++) biasHost[i] = InType(i + 1);
     }
 
     void copyDataToDevice() {
@@ -98,11 +98,11 @@ struct TestBench {
         checkCudaStatus(cudaStreamSynchronize(stream));
     }
 
-    void run(const SampleRunner& runSample) {
+    void run(const SampleRunner& runSample, int num_iters) {
         copyDataToDevice();
-
-        runSample();
-
+        for(int i = 0; i < num_iters; ++i){
+          runSample();
+        }
         copyDataFromDevice();
         streamSynchronize();
     }

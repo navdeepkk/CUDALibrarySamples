@@ -44,9 +44,9 @@ void LtSgemm(cublasLtHandle_t ltHandle,
              int n,
              int k,
              const float *alpha, /* host pointer */
-             const float *A,
+             const __half *A,
              int lda,
-             const float *B,
+             const __half *B,
              int ldb,
              const float *beta, /* host pointer */
              float *C,
@@ -56,6 +56,7 @@ void LtSgemm(cublasLtHandle_t ltHandle,
     cublasLtMatmulDesc_t operationDesc = NULL;
     cublasLtMatrixLayout_t Adesc = NULL, Bdesc = NULL, Cdesc = NULL;
     cublasLtMatmulPreference_t preference = NULL;
+    cublasLtEpilogue_t epilogue = CUBLASLT_EPILOGUE_RELU;
 
     int returnedResults                             = 0;
     cublasLtMatmulHeuristicResult_t heuristicResult = {};
@@ -65,10 +66,11 @@ void LtSgemm(cublasLtHandle_t ltHandle,
     checkCublasStatus(cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32F, CUDA_R_32F));
     checkCublasStatus(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa)));
     checkCublasStatus(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transa)));
+    checkCublasStatus(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_EPILOGUE, &epilogue, sizeof(epilogue)));
 
     // create matrix descriptors, we are good with the details here so no need to set any extra attributes
-    checkCublasStatus(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_32F, transa == CUBLAS_OP_N ? m : k, transa == CUBLAS_OP_N ? k : m, lda));
-    checkCublasStatus(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_32F, transb == CUBLAS_OP_N ? k : n, transb == CUBLAS_OP_N ? n : k, ldb));
+    checkCublasStatus(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_16F, transa == CUBLAS_OP_N ? m : k, transa == CUBLAS_OP_N ? k : m, lda));
+    checkCublasStatus(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_16F, transb == CUBLAS_OP_N ? k : n, transb == CUBLAS_OP_N ? n : k, ldb));
     checkCublasStatus(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_32F, m, n, ldc));
 
     // create preference handle; here we could use extra attributes to disable tensor ops or to make sure algo selected

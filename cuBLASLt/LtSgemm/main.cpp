@@ -34,8 +34,13 @@
 #include "sample_cublasLt_LtSgemm.h"
 #include "helpers.h"
 
-int main() {
-    TestBench<float> props(4, 4, 4, 2.0f, 0.0f);
+int main(int argc, char **argv) {
+    int M = std::atoi(argv[1]);
+    int N = std::atoi(argv[2]);
+    int K = std::atoi(argv[3]);
+    int num_iters = std::atoi(argv[4]);
+
+    TestBench<__half,float,float> props(M, N, K, 1.0f, 1.0f);
 
     props.run([&props] {
         LtSgemm(props.ltHandle,
@@ -54,7 +59,7 @@ int main() {
                 props.m,
                 props.workspace,
                 props.workspaceSize);
-    });
+    }, num_iters);
 
     return 0;
 }
